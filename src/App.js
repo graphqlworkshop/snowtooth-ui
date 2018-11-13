@@ -39,7 +39,7 @@ const Button = styled.div`
 const App = () => (
   <Query query={ALL_LIFTS_QUERY}>
     {({ loading, data, error }) => {
-      if (error) return `Error! ${error.toString()}`
+      if (error) return `Error! ${error.message}`
       if (loading) return 'Loading...'
       return (
         <section>
