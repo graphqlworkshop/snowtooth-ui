@@ -38,61 +38,65 @@ const Button = styled.div`
 
 const App = () => (
   <Query query={ALL_LIFTS_QUERY}>
-    {({ loading, data }) => (
-      <section>
-        {!loading &&
-          data.allLifts.map(lift => (
-            <div key={lift.id}>
-              <h3>{lift.name}</h3>
-              <Mutation mutation={LIFT_STATUS_MUTATION}>
-                {changeStatus => (
-                  <Button
-                    selected={lift.status === 'OPEN'}
-                    color="green"
-                    onClick={() =>
-                      changeStatus({
-                        variables: { id: lift.id, status: 'OPEN' }
-                      })
-                    }
-                  />
-                )}
-              </Mutation>
-              <Mutation mutation={LIFT_STATUS_MUTATION}>
-                {changeStatus => (
-                  <Button
-                    selected={lift.status === 'HOLD'}
-                    color="yellow"
-                    onClick={() =>
-                      changeStatus({
-                        variables: { id: lift.id, status: 'HOLD' }
-                      })
-                    }
-                  />
-                )}
-              </Mutation>
-              <Mutation mutation={LIFT_STATUS_MUTATION}>
-                {changeStatus => (
-                  <Button
-                    selected={lift.status === 'CLOSED'}
-                    color="red"
-                    onClick={() =>
-                      changeStatus({
-                        variables: { id: lift.id, status: 'CLOSED' }
-                      })
-                    }
-                  />
-                )}
-              </Mutation>
-              <h3>Trails</h3>
-              <ul>
-                {lift.trailAccess.map(trail => (
-                  <li key={trail.id}>{trail.name}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-      </section>
-    )}
+    {({ loading, data, error }) => {
+      if (error) return `Error! ${error.toString()}`
+      if (loading) return 'Loading...'
+      return (
+        <section>
+          {!loading &&
+            data.allLifts.map(lift => (
+              <div key={lift.id}>
+                <h3>{lift.name}</h3>
+                <Mutation mutation={LIFT_STATUS_MUTATION}>
+                  {changeStatus => (
+                    <Button
+                      selected={lift.status === 'OPEN'}
+                      color="green"
+                      onClick={() =>
+                        changeStatus({
+                          variables: { id: lift.id, status: 'OPEN' }
+                        })
+                      }
+                    />
+                  )}
+                </Mutation>
+                <Mutation mutation={LIFT_STATUS_MUTATION}>
+                  {changeStatus => (
+                    <Button
+                      selected={lift.status === 'HOLD'}
+                      color="yellow"
+                      onClick={() =>
+                        changeStatus({
+                          variables: { id: lift.id, status: 'HOLD' }
+                        })
+                      }
+                    />
+                  )}
+                </Mutation>
+                <Mutation mutation={LIFT_STATUS_MUTATION}>
+                  {changeStatus => (
+                    <Button
+                      selected={lift.status === 'CLOSED'}
+                      color="red"
+                      onClick={() =>
+                        changeStatus({
+                          variables: { id: lift.id, status: 'CLOSED' }
+                        })
+                      }
+                    />
+                  )}
+                </Mutation>
+                <h3>Trails</h3>
+                <ul>
+                  {lift.trailAccess.map(trail => (
+                    <li key={trail.id}>{trail.name}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+        </section>
+      )
+    }}
   </Query>
 )
 
