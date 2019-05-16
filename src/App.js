@@ -31,16 +31,9 @@ const SET_LIFT_STATUS_MUTATION = gql`
   }
 `;
 
-// setStatus({
-//   variables: {
-//     id: "jazz-cat",
-//     status: "OPEN"
-//   }
-// });
-
 export default function App() {
   const { loading, data } = useQuery(ALL_LIFTS_QUERY);
-  const [setStatus, { error }] = useMutation(SET_LIFT_STATUS_MUTATION);
+  const [setStatus] = useMutation(SET_LIFT_STATUS_MUTATION);
 
   return (
     <section>
@@ -59,7 +52,17 @@ export default function App() {
               <tr key={lift.id}>
                 <td>{lift.name}</td>
                 <td>
-                  <StatusIndicator status={lift.status} />
+                  <StatusIndicator
+                    status={lift.status}
+                    onSelect={status =>
+                      setStatus({
+                        variables: {
+                          id: lift.id,
+                          status
+                        }
+                      })
+                    }
+                  />
                 </td>
               </tr>
             ))}
@@ -70,11 +73,23 @@ export default function App() {
   );
 }
 
-const StatusIndicator = ({ status = "CLOSED" }) => (
+const StatusIndicator = ({ status = "CLOSED", onSelect = f => f }) => (
   <>
-    <Circle color="green" selected={status === "OPEN"} />
-    <Circle color="yellow" selected={status === "HOLD"} />
-    <Circle color="red" selected={status === "CLOSED"} />
+    <Circle
+      color="green"
+      selected={status === "OPEN"}
+      onClick={() => onSelect("OPEN")}
+    />
+    <Circle
+      color="yellow"
+      selected={status === "HOLD"}
+      onClick={() => onSelect("HOLD")}
+    />
+    <Circle
+      color="red"
+      selected={status === "CLOSED"}
+      onClick={() => onSelect("CLOSED")}
+    />
   </>
 );
 
