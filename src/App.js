@@ -33,7 +33,9 @@ const SET_LIFT_STATUS_MUTATION = gql`
 
 export default function App() {
   const { loading, data } = useQuery(ALL_LIFTS_QUERY);
-  const [setStatus] = useMutation(SET_LIFT_STATUS_MUTATION);
+  const [setStatus, { data: mutationData }] = useMutation(
+    SET_LIFT_STATUS_MUTATION
+  );
 
   return (
     <section>
@@ -67,6 +69,19 @@ export default function App() {
               </tr>
             ))}
           </tbody>
+          <caption>
+            {mutationData && (
+              <>
+                <div>
+                  lift <b>{mutationData.setLiftStatus.lift.name}'s</b> status
+                </div>
+                <div>
+                  was changed to <b>{mutationData.setLiftStatus.lift.status}</b>
+                </div>
+                <div>on {mutationData.setLiftStatus.changed}</div>
+              </>
+            )}
+          </caption>
         </table>
       )}
     </section>
