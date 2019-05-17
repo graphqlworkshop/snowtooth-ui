@@ -1,7 +1,7 @@
-import React from 'react'
-import { gql } from 'apollo-boost'
-import { Query, Mutation } from 'react-apollo'
-import styled from 'styled-components'
+import React from "react";
+import gql from "graphql-tag";
+import { useQuery, useMutation } from "@apollo/react-hooks";
+import styled from "styled-components";
 
 const ALL_LIFTS_QUERY = gql`
   query {
@@ -16,88 +16,107 @@ const ALL_LIFTS_QUERY = gql`
       }
     }
   }
-`
+`;
 
-const LIFT_STATUS_MUTATION = gql`
+const SET_LIFT_STATUS_MUTATION = gql`
   mutation SetLiftStatus($id: ID!, $status: LiftStatus!) {
     setLiftStatus(id: $id, status: $status) {
-      id
-      name
-      status
+      changed
+      lift {
+        id
+        name
+        status
+      }
     }
   }
-`
+`;
 
-const Button = styled.div`
-    border-radius: 50%;
-    background-color: ${props => (props.selected ? props.color : 'none')};
-    border: ${props => (props.selected ? 'none' : `solid 2px ${props.color}`)}
-    width: 30px;
-    height: 30px;
-`
+export default function App() {
+  const { loading, data } = useQuery(ALL_LIFTS_QUERY);
+  const [setStatus, { data: mutationData }] = useMutation(
+    SET_LIFT_STATUS_MUTATION
+  );
 
-const App = () => (
-  <Query query={ALL_LIFTS_QUERY}>
-    {({ loading, data, error }) => {
-      if (error) return `Error! ${error.message}`
-      if (loading) return 'Loading...'
-      return (
-        <section>
-          {!loading &&
-            data.allLifts.map(lift => (
-              <div key={lift.id}>
-                <h3>{lift.name}</h3>
-                <Mutation mutation={LIFT_STATUS_MUTATION}>
-                  {changeStatus => (
-                    <Button
-                      selected={lift.status === 'OPEN'}
-                      color="green"
-                      onClick={() =>
-                        changeStatus({
-                          variables: { id: lift.id, status: 'OPEN' }
-                        })
-                      }
-                    />
-                  )}
-                </Mutation>
-                <Mutation mutation={LIFT_STATUS_MUTATION}>
-                  {changeStatus => (
-                    <Button
-                      selected={lift.status === 'HOLD'}
-                      color="yellow"
-                      onClick={() =>
-                        changeStatus({
-                          variables: { id: lift.id, status: 'HOLD' }
-                        })
-                      }
-                    />
-                  )}
-                </Mutation>
-                <Mutation mutation={LIFT_STATUS_MUTATION}>
-                  {changeStatus => (
-                    <Button
-                      selected={lift.status === 'CLOSED'}
-                      color="red"
-                      onClick={() =>
-                        changeStatus({
-                          variables: { id: lift.id, status: 'CLOSED' }
-                        })
-                      }
-                    />
-                  )}
-                </Mutation>
-                <h3>Trails</h3>
-                <ul>
-                  {lift.trailAccess.map(trail => (
-                    <li key={trail.id}>{trail.name}</li>
-                  ))}
-                </ul>
-              </div>
+  return (
+    <section>
+      <h1>Snowtooth Lift Status</h1>
+      {loading && <p>loading...</p>}
+      {data && !loading && (
+        <table className="lifts">
+          <thead>
+            <tr>
+              <th>Lift Name</th>
+              <th>Current Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.allLifts.map(lift => (
+              <tr key={lift.id}>
+                <td>{lift.name}</td>
+                <td>
+                  <StatusIndicator
+                    status={lift.status}
+                    onSelect={status =>
+                      setStatus({
+                        variables: {
+                          id: lift.id,
+                          status
+                        }
+                      })
+                    }
+                  />
+                </td>
+              </tr>
             ))}
-        </section>
-      )
-    }}
-  </Query>
-)
+          </tbody>
+          <caption>
+            {mutationData && (
+              <>
+                <div>
+                  lift <b>{mutationData.setLiftStatus.lift.name}'s</b> status
+                </div>
+                <div>
+                  was changed to <b>{mutationData.setLiftStatus.lift.status}</b>
+                </div>
+                <div>on {mutationData.setLiftStatus.changed}</div>
+              </>
+            )}
+          </caption>
+        </table>
+      )}
+    </section>
+  );
+}
 
-export default App
+const StatusIndicator = ({ status = "CLOSED", onSelect = f => f }) => (
+  <>
+    <Circle
+      color="green"
+      selected={status === "OPEN"}
+      onClick={() => onSelect("OPEN")}
+    />
+    <Circle
+      color="yellow"
+      selected={status === "HOLD"}
+      onClick={() => onSelect("HOLD")}
+    />
+    <Circle
+      color="red"
+      selected={status === "CLOSED"}
+      onClick={() => onSelect("CLOSED")}
+    />
+  </>
+);
+
+const Circle = styled.div`
+  border-radius: 50%;
+  background-color: ${({ color, selected }) =>
+    selected ? color : "transparent"};
+  border: solid 2px ${({ color }) => color};
+  border-width: ${({ selected }) => (selected ? "0" : "2")};
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  float: left;
+  margin: 0 4px;
+`;
