@@ -1,9 +1,9 @@
 import React from "react";
 import gql from "graphql-tag";
-import { useQuery, useMutation } from "@apollo/react-hooks";
-import styled from "styled-components";
+import { StatusIndicator } from "./StatusIndicator";
+import { useQuery, useMutation, useSubscription } from "@apollo/react-hooks";
 
-const ALL_LIFTS_QUERY = gql`
+const QUERY = gql`
   query {
     allLifts {
       id
@@ -18,29 +18,36 @@ const ALL_LIFTS_QUERY = gql`
   }
 `;
 
-const SET_LIFT_STATUS_MUTATION = gql`
+const MUTATION = gql`
   mutation SetLiftStatus($id: ID!, $status: LiftStatus!) {
     setLiftStatus(id: $id, status: $status) {
-      changed
-      lift {
-        id
-        name
-        status
-      }
+      id
+      name
+      status
+    }
+  }
+`;
+
+const SUBSCRIPTION = gql`
+  subscription {
+    liftStatusChange {
+      id
+      status
     }
   }
 `;
 
 export default function App() {
-  const { loading, data } = useQuery(ALL_LIFTS_QUERY);
-  const [setStatus, { data: mutationData }] = useMutation(
-    SET_LIFT_STATUS_MUTATION
-  );
+  const { loading, data } = useQuery(QUERY);
+  const [setStatus] = useMutation(MUTATION);
+  useSubscription(SUBSCRIPTION);
+
+  if (loading) return <p>loading lifts</p>;
 
   return (
     <section>
       <h1>Snowtooth Lift Status</h1>
-      {loading && <p>loading...</p>}
+
       {data && !loading && (
         <table className="lifts">
           <thead>
@@ -56,7 +63,7 @@ export default function App() {
                 <td>
                   <StatusIndicator
                     status={lift.status}
-                    onSelect={status =>
+                    onChange={status =>
                       setStatus({
                         variables: {
                           id: lift.id,
@@ -69,54 +76,8 @@ export default function App() {
               </tr>
             ))}
           </tbody>
-          <caption>
-            {mutationData && (
-              <>
-                <div>
-                  lift <b>{mutationData.setLiftStatus.lift.name}'s</b> status
-                </div>
-                <div>
-                  was changed to <b>{mutationData.setLiftStatus.lift.status}</b>
-                </div>
-                <div>on {mutationData.setLiftStatus.changed}</div>
-              </>
-            )}
-          </caption>
         </table>
       )}
     </section>
   );
 }
-
-const StatusIndicator = ({ status = "CLOSED", onSelect = f => f }) => (
-  <>
-    <Circle
-      color="green"
-      selected={status === "OPEN"}
-      onClick={() => onSelect("OPEN")}
-    />
-    <Circle
-      color="yellow"
-      selected={status === "HOLD"}
-      onClick={() => onSelect("HOLD")}
-    />
-    <Circle
-      color="red"
-      selected={status === "CLOSED"}
-      onClick={() => onSelect("CLOSED")}
-    />
-  </>
-);
-
-const Circle = styled.div`
-  border-radius: 50%;
-  background-color: ${({ color, selected }) =>
-    selected ? color : "transparent"};
-  border: solid 2px ${({ color }) => color};
-  border-width: ${({ selected }) => (selected ? "0" : "2")};
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  float: left;
-  margin: 0 4px;
-`;
