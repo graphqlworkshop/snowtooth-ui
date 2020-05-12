@@ -1,15 +1,17 @@
 import React from "react";
 import { render } from "react-dom";
 import App from "./App";
-import { ApolloClient } from "apollo-client";
-import { InMemoryCache } from "apollo-cache-inmemory";
-import { createHttpLink } from "apollo-link-http";
-import { ApolloProvider } from "@apollo/react-hooks";
+import {
+  ApolloClient,
+  HttpLink,
+  InMemoryCache,
+  ApolloProvider,
+  split
+} from "@apollo/client";
 import { WebSocketLink } from "apollo-link-ws";
-import { split } from "apollo-link";
 import { getMainDefinition } from "apollo-utilities";
 
-const httpLink = createHttpLink({
+const httpLink = new HttpLink({
   uri: "https://snowtooth.moonhighway.com"
 });
 
@@ -24,7 +26,10 @@ const wsLink = new WebSocketLink({
 const link = split(
   ({ query }) => {
     const { kind, operation } = getMainDefinition(query);
-    return kind === "OperationDefinition" && operation === "subscription";
+    return (
+      kind === "OperationDefinition" &&
+      operation === "subscription"
+    );
   },
   wsLink,
   httpLink

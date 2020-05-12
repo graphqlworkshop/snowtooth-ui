@@ -1,10 +1,14 @@
 import React from "react";
-import gql from "graphql-tag";
+import {
+  gql,
+  useQuery,
+  useMutation,
+  useSubscription
+} from "@apollo/client";
 import { StatusIndicator } from "./StatusIndicator";
-import { useQuery, useMutation, useSubscription } from "@apollo/react-hooks";
 
 const QUERY = gql`
-  query {
+  query AllLifts {
     allLifts {
       id
       name
