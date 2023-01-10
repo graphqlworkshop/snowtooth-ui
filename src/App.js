@@ -1,9 +1,8 @@
-import React from "react";
 import {
   gql,
   useQuery,
   useMutation,
-  useSubscription
+  useSubscription,
 } from "@apollo/client";
 import { StatusIndicator } from "./StatusIndicator";
 
@@ -41,7 +40,7 @@ const SUBSCRIPTION = gql`
   }
 `;
 
-export default function App() {
+export function App() {
   const { loading, data } = useQuery(QUERY);
   const [setStatus] = useMutation(MUTATION);
   useSubscription(SUBSCRIPTION);
@@ -61,18 +60,18 @@ export default function App() {
             </tr>
           </thead>
           <tbody>
-            {data.allLifts.map(lift => (
+            {data.allLifts.map((lift) => (
               <tr key={lift.id}>
                 <td>{lift.name}</td>
                 <td>
                   <StatusIndicator
                     status={lift.status}
-                    onChange={status =>
+                    onChange={(status) =>
                       setStatus({
                         variables: {
                           id: lift.id,
-                          status
-                        }
+                          status,
+                        },
                       })
                     }
                   />

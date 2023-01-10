@@ -1,34 +1,33 @@
-import React from "react";
-import { render } from "react-dom";
-import App from "./App";
+import "./index.css";
+import ReactDOM from "react-dom/client";
+import { App } from "./App";
 import {
   ApolloClient,
   HttpLink,
   InMemoryCache,
   ApolloProvider,
-  split
+  split,
 } from "@apollo/client";
-import { WebSocketLink } from "apollo-link-ws";
-import { getMainDefinition } from "apollo-utilities";
+import { getMainDefinition } from "@apollo/client/utilities";
+import { SubscriptionClient } from "subscriptions-transport-ws";
+import { WebSocketLink } from "@apollo/client/link/ws";
 
 const httpLink = new HttpLink({
-  uri: "https://snowtooth.moonhighway.com"
+  uri: "https://snowtooth.moonhighway.com",
 });
 
-const wsLink = new WebSocketLink({
-  uri: `ws://snowtooth.moonhighway.com/graphql`,
-  options: {
-    reconnect: true,
-    lazy: true
-  }
-});
+const wsLink = new WebSocketLink(
+  new SubscriptionClient(
+    "wss://snowtooth.moonhighway.com/graphql"
+  )
+);
 
 const link = split(
   ({ query }) => {
-    const { kind, operation } = getMainDefinition(query);
+    const definition = getMainDefinition(query);
     return (
-      kind === "OperationDefinition" &&
-      operation === "subscription"
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
     );
   },
   wsLink,
@@ -38,9 +37,12 @@ const link = split(
 const cache = new InMemoryCache();
 const client = new ApolloClient({ link, cache });
 
-render(
+const root = ReactDOM.createRoot(
+  document.getElementById("root")
+);
+
+root.render(
   <ApolloProvider client={client}>
     <App />
-  </ApolloProvider>,
-  document.getElementById("root")
+  </ApolloProvider>
 );

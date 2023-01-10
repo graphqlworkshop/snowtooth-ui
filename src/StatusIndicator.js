@@ -1,7 +1,9 @@
-import React from "react";
 import styled from "styled-components";
 
-export const StatusIndicator = ({ status = "CLOSED", onChange = f => f }) => (
+export const StatusIndicator = ({
+  status = "CLOSED",
+  onChange = (f) => f,
+}) => (
   <>
     <Circle
       color="green"
