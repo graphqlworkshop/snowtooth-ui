@@ -9,17 +9,17 @@ import {
   split,
 } from "@apollo/client";
 import { getMainDefinition } from "@apollo/client/utilities";
-import { SubscriptionClient } from "subscriptions-transport-ws";
-import { WebSocketLink } from "@apollo/client/link/ws";
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
+import { createClient } from "graphql-ws";
 
 const httpLink = new HttpLink({
-  uri: "https://snowtooth.moonhighway.com",
+  uri: "https://snowtooth-api-subscriptions.fly.dev/graphql",
 });
 
-const wsLink = new WebSocketLink(
-  new SubscriptionClient(
-    "wss://snowtooth.moonhighway.com/graphql"
-  )
+const wsLink = new GraphQLWsLink(
+  createClient({
+    url: "wss://snowtooth-api-subscriptions.fly.dev/graphql",
+  })
 );
 
 const link = split(

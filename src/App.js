@@ -24,9 +24,11 @@ const QUERY = gql`
 const MUTATION = gql`
   mutation SetLiftStatus($id: ID!, $status: LiftStatus!) {
     setLiftStatus(id: $id, status: $status) {
-      id
-      name
-      status
+      lift {
+        id
+        name
+        status
+      }
     }
   }
 `;
@@ -34,8 +36,11 @@ const MUTATION = gql`
 const SUBSCRIPTION = gql`
   subscription {
     liftStatusChange {
-      id
-      status
+      lift {
+        id
+        name
+        status
+      }
     }
   }
 `;
