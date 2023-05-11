@@ -41,7 +41,9 @@ const SUBSCRIPTION = gql`
 `;
 
 export function App() {
-  const { loading, data } = useQuery(QUERY);
+  const { loading, data, error } = useQuery(QUERY, {
+    errorPolicy: "all",
+  });
   const [setStatus] = useMutation(MUTATION);
   useSubscription(SUBSCRIPTION);
 
@@ -60,6 +62,12 @@ export function App() {
             </tr>
           </thead>
           <tbody>
+            <pre>
+              Bad:{" "}
+              {error.graphQLErrors.map(({ message }, i) => (
+                <span key={i}>{message}</span>
+              ))}
+            </pre>
             {data.allLifts.map((lift) => (
               <tr key={lift.id}>
                 <td>{lift.name}</td>
